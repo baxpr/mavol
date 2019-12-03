@@ -1,0 +1,6 @@
+INPUTS
+OUTPUTS
+local*
+*.simg
+*~
+bin/spm12_mcr
