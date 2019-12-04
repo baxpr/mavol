@@ -1,24 +1,38 @@
+function mavol(varargin)
 
-ticv_niigz = '../INPUTS/orig_target_seg_ticv.nii.gz';
-vol_txt = '../INPUTS/target_processed_label_volumes.txt';
-out_dir = '../OUTPUTS';
+% We know:
+warning('off','MATLAB:table:ModifiedAndSavedVarnames')
 
-addpath('../NIfTI_20140122');
+% Parse inputs and report
+P = inputParser;
+addOptional(P,'assr_label','Unknown_assessor');
+addOptional(P,'seg_niigz','/INPUTS/orig_target_seg.nii.gz');
+addOptional(P,'vol_txt','/INPUTS/target_processed_label_volumes.txt');
+addOptional(P,'out_dir','/OUTPUTS');
+parse(P,varargin{:});
 
+assr_label = P.Results.assr_label;
+seg_niigz = P.Results.seg_niigz;
+vol_txt = P.Results.vol_txt;
+out_dir = P.Results.out_dir;
 
+fprintf('assr_label: %s\n',assr_label);
+fprintf('seg_niigz: %s\n',seg_niigz);
+fprintf('vol_txt: %s\n',vol_txt);
+fprintf('out_dir: %s\n',out_dir);
 
-% Copy TICV file to output location and unzip
-copyfile(ticv_niigz,fullfile(out_dir,'orig_target_seg_ticv.nii.gz'));
-system(['gunzip -f ' fullfile(out_dir,'orig_target_seg_ticv.nii.gz')]);
-ticv_nii = fullfile(out_dir,'orig_target_seg_ticv.nii');
+% Copy SEG/TICV file to output location and unzip
+copyfile(seg_niigz,fullfile(out_dir,'seg.nii.gz'));
+system(['gunzip -f ' fullfile(out_dir,'seg.nii.gz')]);
+seg_nii = fullfile(out_dir,'seg.nii');
 
 % Get pixdim with NIfTI_20140122
-n_affected = load_nii(ticv_nii);
+n_affected = load_nii(seg_nii);
 pixdim_affected = n_affected.hdr.dime.pixdim(2:4);
 voxvol_affected = prod(pixdim_affected);
 
 % Get pixdim with niftiread
-n_true = niftiinfo(ticv_nii);
+n_true = niftiinfo(seg_nii);
 pixdim_true = n_true.PixelDimensions;
 voxvol_true = prod(pixdim_true);
 
@@ -41,15 +55,21 @@ rois.name = cellfun(@lower,rois.name,'UniformOutput',false);
 rois.name = cellfun(@matlab.lang.makeValidName,rois.name,'UniformOutput',false);
 
 % Load the TICV image
-ticv = niftiread(ticv_nii);
+seg = niftiread(seg_nii);
 
-% Results table
+% Compute volumes and write to output file
 results = table(vol_pcterror,'VariableNames',{'load_nii_vol_pcterror'});
 for r = 1:height(rois)
-	voxels = sum( ismember(ticv(:),rois.label{r}) );
+	voxels = sum( ismember(seg(:),rois.label{r}) );
 	results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
 end
-
 writetable(results,fullfile(out_dir,'stats.csv'));
 
+% Make PDF
+
+
+% Exit if we're compiled
+if isdeployed
+	exit(0)
+end
 
