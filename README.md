@@ -1,4 +1,4 @@
-Correct computation of regional from multi-atlas outputs
+Correct computation of regional volumes from multi-atlas outputs
 
 There is a bug in this Matlab Nifti toolbox:
 
