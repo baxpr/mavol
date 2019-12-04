@@ -50,4 +50,6 @@ for r = 1:height(rois)
 	results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
 end
 
+writetable(results,fullfile(out_dir,'stats.csv'));
+
 
