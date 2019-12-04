@@ -3,4 +3,4 @@ OUTPUTS
 local*
 *.simg
 *~
-bin/spm12_mcr
+bin/mavol_mcr
