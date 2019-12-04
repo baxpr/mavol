@@ -10,9 +10,9 @@ The `load_nii` bug affected some version of the multi-atlas segmentation pipelin
 
 https://github.com/vuiiscci/Multi_Atlas_app
 
-The regional volume estimates in the `VOL_TXT/target_processed_label_volumes.txt` file were underestimated in many cases.
+The regional volumes reported in the `VOL_TXT/target_processed_label_volumes.txt` file were underestimated in many cases.
 
-The code here loads the multi-atlas segmentation image (`SEG/orig_target_seg.nii.gz`) and computes correct regional volumes. It also reports the size of the error in the output of any multi-atlas pipeline that was affected by the bug.
+The code here loads the multi-atlas segmentation image (`TICV/orig_target_seg_ticv.nii.gz`) and computes correct regional volumes. It also reports the size of the error in the output of any multi-atlas pipeline that was affected by the bug.
 
 As an alternative for the Matlab Nifti toolbox, newer versions of matlab have `niftiread`, `niftiinfo`, and `niftiwrite` functions. Another possibility is SPM12, which provides tools for reading and writing Nifti files.
 
