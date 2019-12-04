@@ -26,12 +26,28 @@ voxvol_true = prod(pixdim_true);
 vol_pcterror = 100 * (voxvol_affected-voxvol_true) / voxvol_true;
 
 % Load the erroneous vol_txt to get ROI list
-data = readtable(vol_txt,'Delimiter','comma','Format','%s%s%f');
+rois = readtable(vol_txt,'Delimiter','comma','Format','%s%s%f');
 
 % Fix the format of labels to be machine readable and numeric
-data.LabelNumber_BrainCOLOR_ = strrep( ...
-	data.LabelNumber_BrainCOLOR_, '208+209','208 209');
-data.LabelNumber_BrainCOLOR_ = cellfun( ...
-	@str2num, data.LabelNumber_BrainCOLOR_, 'UniformOutput',false);
+rois.label = strrep( ...
+	rois.LabelNumber_BrainCOLOR_, '208+209','208 209');
+rois.label = cellfun( ...
+	@str2num, rois.label, 'UniformOutput',false);
+
+% Fix the region names too
+rois.name = cellfun(@(x) strrep(x,' ','_'),rois.LabelName_BrainCOLOR_, ...
+	'UniformOutput',false);
+rois.name = cellfun(@lower,rois.name,'UniformOutput',false);
+rois.name = cellfun(@matlab.lang.makeValidName,rois.name,'UniformOutput',false);
+
+% Load the TICV image
+ticv = niftiread(ticv_nii);
+
+% Results table
+results = table(vol_pcterror,'VariableNames',{'load_nii_vol_pcterror'});
+for r = 1:height(rois)
+	voxels = sum( ismember(ticv(:),rois.label{r}) );
+	results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
+end
 
 
