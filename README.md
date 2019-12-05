@@ -1,6 +1,6 @@
 # Corrected computation of multi-atlas regional volumes
 
-Some versions of the multi-atlas segmentation pipeline labeled `Multi_Atlas` and `Multi_Atlas_v2` were affected by a bug in a toolbox. The regional volumes reported in the `VOL_TXT/target_processed_label_volumes.txt` file were underestimated in many cases.
+Some versions of the multi-atlas segmentation pipeline labeled `Multi_Atlas` and `Multi_Atlas_v2` were affected by a bug in a toolbox. The regional volumes reported in the `VOL_TXT/target_processed_label_volumes.txt` file were slightly underestimated in many cases.
 
 The code here loads the multi-atlas segmentation result images (`SEG/orig_target_seg.nii.gz`, and `TICV/orig_target_ticv.nii.gz` if available) and computes correct regional volumes. It also reports the size of the error in the original output.
 
