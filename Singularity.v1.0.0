@@ -27,10 +27,10 @@ From: ubuntu:18.04
   
   # Download the Matlab Compiled Runtime installer, install, clean up
   mkdir /MCR
-  wget -nv -P /MCR http://ssd.mathworks.com/supportfiles/downloads/R2017a/deployment_files/R2017a/installers/glnxa64/MCR_R2017a_glnxa64_installer.zip
-  unzip /MCR/MCR_R2017a_glnxa64_installer.zip -d /MCR/MCR_R2017a_glnxa64_installer
-  /MCR/MCR_R2017a_glnxa64_installer/install -mode silent -agreeToLicense yes
-  rm -r /MCR/MCR_R2017a_glnxa64_installer /MCR/MCR_R2017a_glnxa64_installer.zip
+  wget -nv -P /MCR http://ssd.mathworks.com/supportfiles/downloads/R2019b/deployment_files/R2019b/installers/glnxa64/MCR_R2019b_glnxa64_installer.zip
+  unzip /MCR/MCR_R2019b_glnxa64_installer.zip -d /MCR/MCR_R2019b_glnxa64_installer
+  /MCR/MCR_R2019b_glnxa64_installer/install -mode silent -agreeToLicense yes
+  rm -r /MCR/MCR_R2019b_glnxa64_installer /MCR/MCR_R2019b_glnxa64_installer.zip
   rmdir /MCR
 
   # Create input/output directories for binding
