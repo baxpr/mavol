@@ -66,6 +66,23 @@ end
 writetable(results,fullfile(out_dir,'stats.csv'));
 
 % Make PDF
+pdf_figure = openfig('mavol_pdf.fig','new');
+figH = guihandles(pdf_figure);
+set(figH.assr_info, 'String', assr_label);
+set(figH.date,'String',['Report date: ' date]);
+set(figH.version,'String',['Matlab version: ' version]);
+info = table(results{:,2:end}.', ...
+	'RowNames',results.Properties.VariableNames(2:end), ...
+	'VariableNames',{'Volume_mm3'});
+istr = evalc('disp(info)');
+istr = strrep(istr,'<strong>','');
+istr = strrep(istr,'</strong>','');
+
+istr = [ ...
+	sprintf(['Volume error in the analyzed MultiAtlas was %0.4f%%\n\n' ...
+	'First few corrected volumes:\n\n'],vol_pcterror) ...
+	 istr ];
+set(figH.results_text, 'String', istr)
 
 
 % Exit if we're compiled
