@@ -83,6 +83,7 @@ istr = [ ...
 	'First few corrected volumes:\n\n'],vol_pcterror) ...
 	 istr ];
 set(figH.results_text, 'String', istr)
+print(pdf_figure,'-dpdf',fullfile(out_dir,'mavol.pdf'))
 
 
 % Exit if we're compiled
