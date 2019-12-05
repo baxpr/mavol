@@ -46,7 +46,7 @@ n_true = niftiinfo(seg_nii);
 pixdim_true = n_true.PixelDimensions;
 voxvol_true = prod(pixdim_true);
 
-% Compute error in load_nii method
+% Compute the possible error due to bug in load_nii
 vol_pcterror = 100 * (voxvol_affected-voxvol_true) / voxvol_true;
 
 % Load the erroneous vol_txt to get ROI list
@@ -72,8 +72,11 @@ else
 	ticv = [];
 end
 
-% Compute volumes and write to output file. For TICV regions use the TICV file
-results = table(vol_pcterror,'VariableNames',{'load_nii_vol_pcterror'});
+% Compute volumes and write to output file. For TICV regions use the TICV
+% file. Compute the error we actually observed in the data by estimating it
+% from a large white matter ROI.
+results = table(vol_pcterror,nan, ...
+	'VariableNames',{'load_nii_possible_pcterror','load_nii_observed_pcterror'});
 for r = 1:height(rois)
 	if strcmp(rois.name{r},'posteriorfossa') | ...
 			strcmp(rois.name{r},'ticv')
@@ -88,6 +91,10 @@ for r = 1:height(rois)
 		results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
 	end
 end
+wm_true = results.right_cerebellum_white_matter_mm3;
+wm_observed = rois.LabelVolume_mm_3_( ...
+	strcmp(rois.name,'right_cerebellum_white_matter'));
+results.load_nii_observed_pcterror(1) = 100 * (wm_observed-wm_true) / wm_true;
 writetable(results,fullfile(out_dir,'stats.csv'));
 
 % Make PDF
@@ -96,15 +103,17 @@ figH = guihandles(pdf_figure);
 set(figH.assr_info, 'String', assr_label);
 set(figH.date,'String',['Report date: ' date]);
 set(figH.version,'String',['Matlab version: ' version]);
-info = table(results{:,2:end}.', ...
-	'RowNames',results.Properties.VariableNames(2:end), ...
+info = table(results{:,3:end}.', ...
+	'RowNames',results.Properties.VariableNames(3:end), ...
 	'VariableNames',{'Volume_mm3'});
 istr = evalc('disp(info)');
 istr = strrep(istr,'<strong>','');
 istr = strrep(istr,'</strong>','');
 istr = [ ...
-	sprintf(['Volume error in the analyzed MultiAtlas was %0.4f%%\n\n' ...
-	'First few corrected volumes:\n\n'],vol_pcterror) ...
+	sprintf(['Possible error for this image geometry: %0.4f%%\n' ...
+	'Actual error in the analyzed MultiAtlas: %0.4f%%\n\n' ...
+	'First few corrected volumes:\n\n'],vol_pcterror, ...
+	results.load_nii_observed_pcterror) ...
 	istr ];
 set(figH.results_text, 'String', istr)
 print(pdf_figure,'-dpdf',fullfile(out_dir,'mavol.pdf'))
