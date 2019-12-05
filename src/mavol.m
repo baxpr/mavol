@@ -7,17 +7,20 @@ warning('off','MATLAB:table:ModifiedAndSavedVarnames')
 P = inputParser;
 addOptional(P,'assr_label','Unknown_assessor');
 addOptional(P,'seg_niigz','/INPUTS/orig_target_seg.nii.gz');
+addOptional(P,'ticv_niigz','');
 addOptional(P,'vol_txt','/INPUTS/target_processed_label_volumes.txt');
 addOptional(P,'out_dir','/OUTPUTS');
 parse(P,varargin{:});
 
 assr_label = P.Results.assr_label;
 seg_niigz = P.Results.seg_niigz;
+ticv_niigz = P.Results.ticv_niigz;
 vol_txt = P.Results.vol_txt;
 out_dir = P.Results.out_dir;
 
 fprintf('assr_label: %s\n',assr_label);
 fprintf('seg_niigz: %s\n',seg_niigz);
+fprintf('ticv_niigz: %s\n',ticv_niigz);
 fprintf('vol_txt: %s\n',vol_txt);
 fprintf('out_dir: %s\n',out_dir);
 
@@ -25,6 +28,13 @@ fprintf('out_dir: %s\n',out_dir);
 copyfile(seg_niigz,fullfile(out_dir,'seg.nii.gz'));
 system(['gunzip -f ' fullfile(out_dir,'seg.nii.gz')]);
 seg_nii = fullfile(out_dir,'seg.nii');
+if ~isempty(ticv_niigz)
+	copyfile(ticv_niigz,fullfile(out_dir,'ticv.nii.gz'));
+	system(['gunzip -f ' fullfile(out_dir,'ticv.nii.gz')]);
+	ticv_nii = fullfile(out_dir,'ticv.nii');
+else
+	ticv_nii = '';
+end
 
 % Get pixdim with NIfTI_20140122
 n_affected = load_nii(seg_nii,[],[],[],[],[],1);
@@ -54,14 +64,29 @@ rois.name = cellfun(@(x) strrep(x,' ','_'),rois.LabelName_BrainCOLOR_, ...
 rois.name = cellfun(@lower,rois.name,'UniformOutput',false);
 rois.name = cellfun(@matlab.lang.makeValidName,rois.name,'UniformOutput',false);
 
-% Load the TICV image
+% Load the SEG and TICV image
 seg = niftiread(seg_nii);
+if ~isempty(ticv_nii)
+	ticv = niftiread(ticv_nii);
+else
+	ticv = [];
+end
 
-% Compute volumes and write to output file
+% Compute volumes and write to output file. For TICV regions use the TICV file
 results = table(vol_pcterror,'VariableNames',{'load_nii_vol_pcterror'});
 for r = 1:height(rois)
-	voxels = sum( ismember(seg(:),rois.label{r}) );
-	results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
+	if strcmp(rois.name{r},'posteriorfossa') | ...
+			strcmp(rois.name{r},'ticv')
+		fprintf('Found TICV ROI %s\n',rois.name{r});
+		if isempty(ticv)
+			error('Found a TICV region but no TICV image')
+		end
+		voxels = sum( ismember(ticv(:),rois.label{r}) );
+		results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
+	else
+		voxels = sum( ismember(seg(:),rois.label{r}) );
+		results.([rois.name{r} '_mm3']) = voxels * voxvol_true;
+	end
 end
 writetable(results,fullfile(out_dir,'stats.csv'));
 
@@ -77,14 +102,13 @@ info = table(results{:,2:end}.', ...
 istr = evalc('disp(info)');
 istr = strrep(istr,'<strong>','');
 istr = strrep(istr,'</strong>','');
-
 istr = [ ...
 	sprintf(['Volume error in the analyzed MultiAtlas was %0.4f%%\n\n' ...
 	'First few corrected volumes:\n\n'],vol_pcterror) ...
-	 istr ];
+	istr ];
 set(figH.results_text, 'String', istr)
 print(pdf_figure,'-dpdf',fullfile(out_dir,'mavol.pdf'))
-
+close(pdf_figure)
 
 % Exit if we're compiled
 if isdeployed
