@@ -4,3 +4,4 @@ local*
 *.simg
 *~
 bin/mavol_mcr
+.DS_Store
