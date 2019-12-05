@@ -1,6 +1,6 @@
 # Correct computation of regional volumes from multi-atlas outputs
 
-There is a bug in this Matlab Nifti toolbox:
+There is a bug in the 20140122 (latest) version of this Matlab Nifti toolbox:
 
 https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image
 
