@@ -27,7 +27,7 @@ system(['gunzip -f ' fullfile(out_dir,'seg.nii.gz')]);
 seg_nii = fullfile(out_dir,'seg.nii');
 
 % Get pixdim with NIfTI_20140122
-n_affected = load_nii(seg_nii);
+n_affected = load_nii(seg_nii,[],[],[],[],[],1);
 pixdim_affected = n_affected.hdr.dime.pixdim(2:4);
 voxvol_affected = prod(pixdim_affected);
 
